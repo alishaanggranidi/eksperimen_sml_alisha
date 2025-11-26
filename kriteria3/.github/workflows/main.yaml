@@ -1,4 +1,4 @@
-name: CI Workflow - Alisha 
+name: CI Workflow - Alisha
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write 
 
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,11 +32,12 @@ jobs:
       run: |
         mlflow run kriteria3/MLProject --env-manager=local
 
-
-    - name: Build Docker Model
+    - name: Build Docker Model (Direct Path)
       run: |
         echo "Sedang mencari folder model..."
         
+        # Cari folder bernama 'model' di dalam mlruns
+        # $(pwd) memberikan alamat lengkap C:/Users/... atau /home/runner/...
         MODEL_PATH=$(find $(pwd)/mlruns -name "model" -type d | head -n 1)
 
         if [ -z "$MODEL_PATH" ]; then
@@ -47,7 +48,6 @@ jobs:
 
         echo "Model ditemukan di: $MODEL_PATH"
         
-        # Build Docker menggunakan alamat folder langsung (Bukan runs:/...)
         mlflow models build-docker --model-uri "$MODEL_PATH" --name "insurance_model" 
 
     - name: Log in to Docker Hub
