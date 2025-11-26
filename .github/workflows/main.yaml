@@ -1,11 +1,11 @@
-name: CI Workflow - Alisha
+name: CI Workflow 
 
 on:
   push:
     branches: ["main"]
     paths:
-      - 'kriteria3/**'         
-      - '.github/workflows/**' 
+      - 'kriteria3/**'
+      - '.github/workflows/**'
 
 permissions:
   contents: write 
@@ -34,22 +34,24 @@ jobs:
 
     - name: Build Docker Model
       run: |
-        echo "Sedang mencari folder model..."
+        echo "Sedang mencari file MLmodel..."
         
-        # Cari folder 'model' di direktori kerja saat ini
-        MODEL_PATH=$(find $(pwd)/mlruns -name "model" -type d | head -n 1)
+        # Cari FILE bernama 'MLmodel' di mana pun dia sembunyi
+        MLMODEL_FILE=$(find $(pwd)/mlruns -name "MLmodel" | head -n 1)
 
-        # Cek kalau folder tidak ketemu
-        if [ -z "$MODEL_PATH" ]; then
-          echo "Folder model tidak ditemukan. Cek log training di atas."
+        if [ -z "$MLMODEL_FILE" ]; then
+          echo "File MLmodel tidak ada."
           ls -R mlruns
           exit 1
         fi
 
-        echo "Model ditemukan di: $MODEL_PATH"
+        # Ambil nama FOLDER tempat file itu berada (dirname)
+        MODEL_DIR=$(dirname "$MLMODEL_FILE")
         
-        # Build Docker menggunakan alamat folder langsung
-        mlflow models build-docker --model-uri "$MODEL_PATH" --name "insurance_model" 
+        echo "Model ditemukan di: $MODEL_DIR"
+        
+        # Build Docker pakai alamat folder yang barusan kita temukan
+        mlflow models build-docker --model-uri "$MODEL_DIR" --name "insurance_model" 
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
